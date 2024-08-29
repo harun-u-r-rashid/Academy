@@ -69,7 +69,10 @@ class PasswordResetView(generics.RetrieveAPIView):
             user.otp = generate_randon_otp()
             user.save()
 
-            link = f"http://localhost:5173/new_password/?otp={user.otp}&uuidb64={uuidb64}&=refresh_token{refresh_token}"
+            # link = f"http://localhost:5173/new_password/?otp={user.otp}&uuidb64={uuidb64}&=refresh_token{refresh_token}"
+            link = f"https://academy-platfrom-u6f9.onrender.com/new_password/?otp={user.otp}&uuidb64={uuidb64}&=refresh_token{refresh_token}"
+            
+            
             print(link)
 
             context = {"link": link, "username": user.username}
@@ -423,11 +426,13 @@ class StripeCheckoutView(generics.CreateAPIView):
                     }
                 ],
                 mode="payment",
-                success_url=settings.FRONTEND_SITE_URL
+                # success_url=settings.FRONTEND_SITE_URL
+                success_url=settings.BACKEND_SITE_URL
                 + "payment-success/"
                 + order.order_id
                 + "?session_id={CHECKOUT_SESSION_ID}",
-                cancel_url=settings.FRONTEND_SITE_URL + "payment-failed/",
+                # cancel_url=settings.FRONTEND_SITE_URL + "payment-failed/",
+                cancel_url=settings.BACKEND_SITE_URL + "payment-failed/",
             )
 
             print(checkout_session)

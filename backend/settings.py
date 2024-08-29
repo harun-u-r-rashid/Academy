@@ -296,3 +296,4 @@ PAYPAL_SECRET_KEY = env("PAYPAL_SECRET_KEY")
 
 
 FRONTEND_SITE_URL = "http://localhost:5173/"
+BACKEND_SITE_URL = "https://academy-platfrom-u6f9.onrender.com/"
