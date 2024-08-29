@@ -1,0 +1,52 @@
+LANGUAGE = (
+    ("ENGLISH", "ENGLISH"),
+    ("BANGLA", "BANGLA"),
+    ("HINDI", "HINDI"),
+)
+
+LEVEL = (
+    ("BEGGINER", "BEGGINER"),
+    ("INTERMEDIATE", "INTERMEDIATE"),
+    ("ADVANCE", "ADVANCE"),
+)
+
+
+TEACHER_STATUS = (
+    ("DRAFT", "DRAFT"),
+    ("DISABLED", "DISABLED"),
+    ("PUBLISHED", "PUBLISHED"),
+)
+
+
+PAYMENT_STATUS = (
+    ("PAID", "PAID"),
+    ("PROCESSING", "PROCESSING"),
+    ("FAILED", "FAILED"),
+)
+
+
+PLATFORM_STATUS = (
+    ("REVIEW", "REVIEW"),
+    ("DISABLED", "DISABLED"),
+    ("REJECTED", "REJECTED"),
+    ("DRAFT", "DRAFT"),
+    ("PUBLISHED", "PUBLISHED"),
+)
+
+
+RATING = (
+    (1, "1 STAR"),
+    (2, "2 STAR"),
+    (3, "3 STAR"),
+    (4, "4 STAR"),
+    (5, "5 STAR"),
+)
+
+NOTIFICATION_TYPE = (
+    ("NEW ORDER", "NEW ORDER"),
+    ("NEW REVIEW", "NEW REVIEW"),
+    ("NEW COURSE QUESTION", "NEW COURSE QUESTION"),
+    ("DRAFT","DRAFT"),
+    ("COURSE PUBLISHED", "COURSE PUBLISHED"),
+    ("COURSE ENROLLMENT COMPLETED", "COURSE ENROLLMENT COMPLETED"),
+)
