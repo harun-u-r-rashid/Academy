@@ -1,6 +1,6 @@
 # ======import from Django buildin
-from django.shortcuts import render, redirect
-from rest_framework_simplejwt.views import TokenObtainPairView
+from django.shortcuts import redirect
+
 from rest_framework import generics
 from rest_framework.permissions import (
     AllowAny,
@@ -8,21 +8,18 @@ from rest_framework.permissions import (
     IsAdminUser,
     IsAuthenticatedOrReadOnly,
 )
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
 from decimal import Decimal
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
-import random
+
 import stripe
 import stripe.error
 import requests
 
 # =======import from custom app=============#
-from appAuth.models import User, Profile
-from . import models
-from . import serializers
+from appAuth.models import User
+from appApi import models
+from appApi import serializers
 from backend import settings
 
 
@@ -31,126 +28,6 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 PAYPAL_CLIENT_ID = settings.PAYPAL_CLIENT_ID
 PAYPAL_SECRET_KEY = settings.PAYPAL_SECRET_KEY
 
-
-# ======Views start from here======#
-
-
-# =========Views for appUserAuth===========#
-class MyTokenObtainPairView(TokenObtainPairView):
-    serializer_class = serializers.MyTokenObtainPairSerializer
-
-
-class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    permission_classes = [AllowAny]
-    serializer_class = serializers.RegisterSerializer
-
-
-def generate_randon_otp(length=8):
-    otp = "".join([str(random.randint(0, 9)) for _ in range(length)])
-    return otp
-
-
-class PasswordResetView(generics.RetrieveAPIView):
-    permission_classes = [AllowAny]
-    serializer_class = serializers.UserSerializer
-
-    def get_object(self):
-        email = self.kwargs["email"]
-        user = User.objects.filter(email=email).first()
-        
-
-        if user is not None:
-            print(user)
-            uuidb64 = user.pk
-            refresh = RefreshToken.for_user(user)
-            refresh_token = str(refresh.access_token)
-            user.refresh_token = refresh_token
-            user.otp = generate_randon_otp()
-            user.save()
-
-            # link = f"http://localhost:5173/new_password/?otp={user.otp}&uuidb64={uuidb64}&=refresh_token{refresh_token}"
-            link = f"https://academy-platfrom-u6f9.onrender.com/new_password/?otp={user.otp}&uuidb64={uuidb64}&=refresh_token{refresh_token}"
-            
-            
-            print(link)
-
-            context = {"link": link, "username": user.username}
-
-            subject = "Password reset email"
-            text_body = render_to_string("password_reset.txt", context)
-            html_body = render_to_string("password_reset.html", context)
-
-            message = EmailMultiAlternatives(
-                subject=subject,
-                from_email=settings.EMAIL_HOST_USER,
-                to=[user.email],
-                body=text_body,
-            )
-
-            message.attach_alternative(html_body, "text/html")
-            message.send()
-        return user
-
-
-
-
-class PasswordChangeView(generics.CreateAPIView):
-    permission_classes = [AllowAny]
-    serializer_class = serializers.UserSerializer
-
-    def create(self, request, *args, **kwargs):
-        otp = request.data["otp"]
-        uuidb64 = request.data["uuidb64"]
-        password = request.data["password"]
-
-        user = User.objects.get(id=uuidb64, otp=otp)
-
-        if user:
-            user.set_password(password)
-            user.save()
-
-            return Response(
-                {"message": "Password Changed Successfully"},
-                status=status.HTTP_201_CREATED,
-            )
-        else:
-            return Response(
-                {"message": "User doesn't exist"}, status=status.HTTP_404_NOT_FOUND
-            )
-
-
-# ====Views for appApi
-
-
-# ====Coure View
-class CategoryView(generics.ListAPIView):
-    queryset = models.Category.objects.filter(active=True)
-    serializer_class = serializers.CategorySerializer
-    permission_classes = [AllowAny]
-
-
-class CourseView(generics.ListAPIView):
-    queryset = models.Course.objects.filter(
-        platform_status="PUBLISHED", teacher_course_status="PUBLISHED"
-    )
-    serializer_class = serializers.CourseSerializer
-    permission_classes = [AllowAny]
-
-
-class CourseDetailsView(generics.RetrieveAPIView):
-    queryset = models.Course.objects.filter(
-        platform_status="PUBLISHED", teacher_course_status="PUBLISHED"
-    )
-    serializer_class = serializers.CourseSerializer
-    permission_classes = [AllowAny]
-
-    def get_object(self):
-        slug = self.kwargs["slug"]
-        course = models.Course.objects.get(
-            slug=slug, platform_status="PUBLISHED", teacher_course_status="PUBLISHED"
-        )
-        return course
 
 
 # ==========Cart View==============#
@@ -285,7 +162,7 @@ class OrderCreateView(generics.CreateAPIView):
         user_id = request.data["user_id"]
 
         if user_id != 0:
-            user =User.objects.get(id=user_id)
+            user = User.objects.get(id=user_id)
         else:
             user = None
 
@@ -546,28 +423,8 @@ class PaymentSuccessView(generics.CreateAPIView):
                             teacher=i.teacher,
                             order_item=i,
                         )
-                    return Response({"message":"Payment Successfull"})
+                    return Response({"message": "Payment Successfull"})
                 else:
-                    return Response({"message":"Already Paid"})
+                    return Response({"message": "Already Paid"})
             else:
-                return Response({"message":"Payment Failed"})
-
-
-
-class SearchCourseView(generics.ListAPIView):
-    serializer_class = serializers.CourseSerializer
-    permission_classes = [AllowAny]
-
-    def get_queryset(self):
-        query = self.request.GET.get("query")
-        return models.Course.objects.filter(
-            title__icontains=query,
-            platform_status="Published",
-            teacher_course_status="Published",
-        )
-
-
-class ReviewView(generics.ListAPIView):
-    queryset = models.Review.objects.all()
-    serializer_class = serializers.ReviewSerializer
-    permission_classes = [AllowAny]
+                return Response({"message": "Payment Failed"})

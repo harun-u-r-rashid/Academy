@@ -2,6 +2,7 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 from django.db.models.signals import post_save
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class AccountManager(BaseUserManager):
@@ -49,11 +50,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["username", "full_name", "password"]
+    REQUIRED_FIELDS = ["username", "full_name"]
     objects = AccountManager()
 
     def __str__(self):
         return self.email
+    
+    def tokens(self):
+        refresh = RefreshToken.for_user(self)
+        return {"refresh": str(refresh), "access": str(refresh.access_token)}
     
 
     def has_perm(self, perm, obj=None):
@@ -72,6 +77,17 @@ class User(AbstractBaseUser, PermissionsMixin):
         super(User, self).save(*args, **kwargs)
 
 
+
+
+class OneTimePassword(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    code = models.CharField(max_length=10, unique=True)
+
+    def __str__(self):
+        return f"{self.user.username}"
+    
+
+    
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     image = models.FileField(

@@ -3,8 +3,8 @@ from django.utils.text import slugify
 from django.utils import timezone
 from shortuuid.django_fields import ShortUUIDField
 from moviepy.editor import VideoFileClip
-import math
 from appAuth.models import User, Profile
+import math
 from .constants import (
     LANGUAGE,
     LEVEL,
@@ -14,7 +14,6 @@ from .constants import (
     RATING,
     NOTIFICATION_TYPE,
 )
-
 
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -414,8 +413,7 @@ class Notification(models.Model):
 class Wishlist(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    date = models.DateTimeField(default=timezone.now)
-
+  
     def __str__(self):
         return self.course.title
 
